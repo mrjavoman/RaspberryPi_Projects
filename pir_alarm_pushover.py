@@ -68,6 +68,6 @@ while True:
         # sms(to,message,hash)
         # time.sleep(5)
 
-        r = requests.post("https://api.pushover.net/1/messages.json",data={"token": "axou37u49e18oua9bw4trqagxwp4en","user": "u64g5651u5wz78vaow4vfvd1111e5w","message": ("Alert: " + str(a))},files = {"attachment": (str(a), open("/home/pi/picamera/PIR_Alarm-master/" + pic ,"rb"), "image/jpeg")})
+        r = requests.post("https://api.pushover.net/1/messages.json",data={"token": "abc5kk96z5ave92xg8edp6cc89dnui","user": "ur8ix1abhx1s8wn3s4s6m8dd3trbiu","message": ("Alert: " + str(a))},files = {"attachment": (str(a), open("/home/pi/picamera/PIR_Alarm-master/" + pic ,"rb"), "image/jpeg")})
 
         print(r.text)
