@@ -1,3 +1,7 @@
+/*
+g++ detect_alarm.cpp -o detect `pkg-config --cflags --libs opencv4`
+*/
+
 // Include Libraries
 #include <iostream>
 #include <fstream>
@@ -74,6 +78,7 @@ int main()
 	int frameCount = 0;
 	bool imageWritten = true;
 
+	// Initialize model.
 	cv::dnn::Net net = cv::dnn::readNetFromDarknet("../models/yolov4.cfg", "../models/yolov4.weights");	
 	net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
 	net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
@@ -87,6 +92,15 @@ int main()
 		
 	    // Initialize a boolean to check if frames are there or not
 		bool isSuccess = vid_capture.read(frame);	
+		    // Read picture
+		//frame = cv::imread("../test_images/strange_nina.jpeg");
+		if (frame.empty())
+		{
+			std::cout << "!!! Failed imread(): image not found" << std::endl;
+			// don't let the execution continue, else imshow() will crash.
+		}
+
+
 		auto total_start = std::chrono::steady_clock::now();
 
 		// If frames are present, show it		
@@ -95,8 +109,9 @@ int main()
 			
 			//display frames
 			//imshow("Frame", frame);
-			if(imageWritten && frameCount == 60) 
+			if(imageWritten && frameCount == 600) 
 			{
+				/// -- Detect something in image. --
 				// Setup image blob from the frame
 				cv::dnn::blobFromImage(frame, blob, 0.00392, cv::Size(608, 608), cv::Scalar(), true, false, CV_32F);
 
@@ -117,6 +132,7 @@ int main()
 				std::vector<cv::Rect> boxes[NUM_CLASSES];
 				std::vector<float> scores[NUM_CLASSES];
 
+				// Process detections and assign the boxes and the confidence number on the detection 
 				for (auto& output : detections)
 				{
 					const auto num_boxes = output.rows;
@@ -140,9 +156,13 @@ int main()
 					}
 				}
 
+				// Perform non maximum suppression to eliminate redundant overlapping boxes with lower confidences.
+				// https://learnopencv.com/deep-learning-based-object-detection-using-yolov3-with-opencv-python-c/
 				for (int c = 0; c < NUM_CLASSES; c++)
 					cv::dnn::NMSBoxes(boxes[c], scores[c], 0.0, NMS_THRESHOLD, indices[c]);
 				
+				// Draw the rectangle with label and output the results to the console
+				// passes the frame by reference?
 				for (int c= 0; c < NUM_CLASSES; c++)
 				{
 					for (size_t i = 0; i < indices[c].size(); ++i)
@@ -170,6 +190,8 @@ int main()
 
 				float inference_fps = 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(dnn_end - dnn_start).count();
 				float total_fps = 1000.0 / std::chrono::duration_cast<std::chrono::milliseconds>(total_end - total_start).count();
+
+				// Get stats for the picture and draw them.
 				std::ostringstream stats_ss;
 				// stats_ss << std::fixed << std::setprecision(2);
 				// stats_ss << "Inference FPS: " << inference_fps << ", Total FPS: " << total_fps;
@@ -205,7 +227,7 @@ int main()
 		// 	break;
 		// }
 
-		frameCount++;
+		frameCount++;		
 	}
 	// Release the video capture object
 	vid_capture.release();

@@ -19,7 +19,6 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
-// #include "httplib.h"
 #include <curl/curl.h>
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -55,18 +54,7 @@ int main() {
     std::ostringstream ss;
     ss << fin.rdbuf();
     std::string picData = ss.str();
-
-    // Send picture using Pushover api.
-    // httplib::Client cli("https://api.pushover.net");
-    // httplib::MultipartFormDataItems items = {
-    //     { "token", "abc5kk96z5ave92xg8edp6cc89dnui" },
-    //     { "user", "ur8ix1abhx1s8wn3s4s6m8dd3trbiu" },
-    //     { "message", "Alert: " + picName },
-    //     { "files", picName, picData, "image/jpeg" }
-    // };
-
-    // auto res = cli.Post("/1/messages.json", items);
-
+   
     // std::cout << res->status << std::endl;
     //std::string body = "{token : abc5kk96z5ave92xg8edp6cc89dnui , user : ur8ix1abhx1s8wn3s4s6m8dd3trbiu , message : ("Alert: " + msg_title)},files = {"attachment": (str(file), open(result_image ,"rb"), "image/jpeg")}
 
@@ -96,12 +84,10 @@ int main() {
 
      curl_formadd(&formpost, 
         &lastptr,
-        CURLFORM_COPYNAME, "files",        
+        CURLFORM_COPYNAME, "attachment",        
         CURLFORM_FILE, picToSend.data(),
         CURLFORM_CONTENTTYPE, "image/jpeg",
         CURLFORM_END);
-
-    //curl_slist *headerlist = curl_slist_append(NULL, "Expect:");
 
     curl = curl_easy_init();
     if(curl) {
