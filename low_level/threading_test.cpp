@@ -3,6 +3,7 @@
  g++ threading_test.cpp -o threading -pthread -std=c++17 `pkg-config --cflags --libs opencv4`
 */
 #include<iostream>
+#include <fstream>
 #include<chrono>
 #include<thread>
 #include<vector>
@@ -38,15 +39,28 @@ void parallelFunction(std::vector<int> &vec) {
 
 int main() {
 
-    cv::Mat frame;
-    int frameCount = 0;
+    
 
     cv::VideoCapture vid_capture("../test_videos/James.mp4");
+    cv::namedWindow("Output");
 	// Print error message if the stream is invalid
-	if (!vid_capture.isOpened())
-	{
+	if (!vid_capture.isOpened()) {
 		std::cout << "Error opening video stream or file" << std::endl;
 	}
+    else {
+		// Obtain fps and frame count by get() method and print
+		// You can replace 5 with CAP_PROP_FPS as well, they are enumerations
+		int fps = vid_capture.get(5);
+		std::cout << "Frames per second :" << fps;
+
+		// Obtain frame_count using opencv built in frame count reading method
+		// You can replace 7 with CAP_PROP_FRAME_COUNT as well, they are enumerations
+		int frame_count = vid_capture.get(7);
+		std::cout << "  Frame count :" << frame_count << std::endl;
+	}
+
+    cv::Mat frame;
+    int frameCount = 0;
 
     while(vid_capture.isOpened()) {
 
@@ -56,15 +70,19 @@ int main() {
 		//frame = cv::imread("../test_images/strange_nina.jpeg");
 		if (frame.empty())
 		{
-			std::cout << "!!! Failed imread(): image not found" << std::endl;
+			std::cout << "!!! Failed video capture: image not found" << std::endl;
 			// don't let the execution continue, else imshow() will crash.
 		}
 
+        char c;
         // If frames are present, show it		
-		if(isSuccess == true) {
+		if(isSuccess) {
         
-            cv::namedWindow("Video Output");
-            cv::imshow("Video Output", frame);
+            std::cout << isSuccess << std::endl;   
+            cv::imshow("Output", frame);
+
+            c = (char)cv::waitKey(40);
+
 
         } else {
 
@@ -72,12 +90,18 @@ int main() {
 			break;            
         }
 
+        // Exit if 'Esc' button is pressed
+        if(c == 27) {
+            break;
+        }
+
+
         frameCount++;
     }
 
     // Release memory
     vid_capture.release();
-
+    cv::destroyAllWindows();
     std::cout << "Staring main function." << std::endl;
     std::vector<int> v = { 1, 2, 3, 4, 2, 2, 4, 6, 5 };
 
